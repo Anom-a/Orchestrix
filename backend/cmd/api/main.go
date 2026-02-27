@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load("../../.env")
+	_ = godotenv.Load(".env", "../.env", "../../.env", "backend/.env")
 	port := os.Getenv("PORT")
 	configFile := config.Load(port)
 	r := gin.Default()
