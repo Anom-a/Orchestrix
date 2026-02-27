@@ -18,7 +18,7 @@ func main() {
 	configFile := config.Load(port)
 	r := gin.Default()
 	database.Connect()
-	database.DB.AutoMigrate(&models.User{})
+	database.DB.AutoMigrate(&models.User{}, models.Document{})
 	routes.RegisterRoutes(r)
 
 	log.Printf("Starting server on %s", configFile.Port)
