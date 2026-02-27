@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/Anom-a/Orchestrix/internal/config"
+	"github.com/Anom-a/Orchestrix/internal/database"
+	"github.com/Anom-a/Orchestrix/internal/models"
 	"github.com/Anom-a/Orchestrix/internal/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -12,11 +14,11 @@ import (
 
 func main() {
 	_ = godotenv.Load("../../.env")
-
 	port := os.Getenv("PORT")
 	configFile := config.Load(port)
-
 	r := gin.Default()
+	database.Connect()
+	database.DB.AutoMigrate(&models.User{})
 	routes.RegisterRoutes(r)
 
 	log.Printf("Starting server on %s", configFile.Port)
