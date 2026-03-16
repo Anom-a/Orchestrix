@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
-
+	"time"
 	"github.com/Anom-a/Orchestrix/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -17,15 +18,19 @@ func UploadDocument(c *gin.Context){
 		return
 	}
 	uploadDir := "storage/uploads"
-	os.MkdirAll(uploadDir, os.ModePerm)
-	filePath := filepath.Join(uploadDir, file.Filename)
-	if err := c.SaveUploadedFile(file, filePath);err != nil{
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create the document"})
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "error creating file"})
 		return
 	}
-	err = services.CreateDocument(userID, file.Filename, filePath)
+	uniqueName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), file.Filename)
+	filePath := filepath.Join(uploadDir, uniqueName)
+	if err := c.SaveUploadedFile(file, filePath);err != nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save the document"})
+		return
+	}
+	err = services.CreateDocument(userID, uniqueName, filePath)
 	if err != nil{
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save the document to the db"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save the create to the db"})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{

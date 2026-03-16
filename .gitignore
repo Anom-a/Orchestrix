@@ -1,1 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Go / Air
+tmp/
+backend/tmp/
+bin/
+
+# Environments
 .env
+
+# OS
+.DS_Store

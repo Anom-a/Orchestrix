@@ -17,6 +17,6 @@ func CreateDocument(userID uint, filename, filepath string) error{
 
 func GetUserDocuments(userID uint) ([]models.Document, error){
 	var docs []models.Document
-	err := database.DB.Where("user_id : ?", userID).Find(&docs).Error
+	err := database.DB.Where("user_id = ?", userID).Find(&docs).Error
 	return docs, err
 }
