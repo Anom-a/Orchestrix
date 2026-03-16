@@ -13,5 +13,7 @@ def store_embeddings(embeddings, chunks):
     documents.extend(chunks)
 
 def search(query_embedding, k=3):
+    if index is None:
+        return []
     D, I = index.search(np.array([query_embedding]).astype("float32"), k)
     return [documents[i] for i in I[0]]
