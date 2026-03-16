@@ -3,6 +3,9 @@ uvicorn
 langchain
 langchain-community
 sentence-transformers
+numpy==1.26.4
+scipy==1.11.4
+scikit-learn==1.3.2
 faiss-cpu
 python-dotenv
 pydantic

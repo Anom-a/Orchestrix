@@ -1,10 +1,14 @@
 from fastapi import FastAPI
-from app.api.routes import router
+from app.routes import ingest, query
 
-app = FastAPI(title="Orchestrix AI Service")
+app = FastAPI()
 
-app.include_router(router)
+app.include_router(ingest.router, prefix="/ai")
+app.include_router(query.router, prefix="/ai")
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=9000, reload=True)
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "orchestrix-ai-service"
+        }

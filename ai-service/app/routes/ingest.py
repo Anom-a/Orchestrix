@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 from pydantic import BaseModel
 from app.services.rag_pipeline  import ingest_document
+
 router = APIRouter()
 class IngestRequest(BaseModel):
     text: str
