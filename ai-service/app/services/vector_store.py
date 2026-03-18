@@ -22,12 +22,16 @@ def save_index():
         pickle.dump(documents, f)
 def store_embeddings(embeddings, chunks):
     global index, documents
+
     embeddings = np.array(embeddings).astype("float32")
+
     if index is None:
         dim = embeddings.shape[1]
         index = faiss.IndexFlatL2(dim)
+
     index.add(embeddings)
     documents.extend(chunks)
+
     save_index()
 
 def search(query_embedding, k=3):
