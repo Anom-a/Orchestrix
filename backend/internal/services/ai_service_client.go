@@ -6,19 +6,19 @@ import (
 	"net/http"
 )
 
-type ProccessRequest struct {
+type ProcessRequest struct {
 	DocumentID string `json:"document_id"`
 	FilePath   string `json:"file_path"`
 }
 
 func SendToAIService(docID, filepath string) error {
-	reqBody := ProccessRequest{
+	reqBody := ProcessRequest{
 		DocumentID: docID,
 		FilePath:   filepath,
 	}
 	jsonData, _ := json.Marshal(reqBody)
 	_, err := http.Post(
-		"http://localhost:8000/ai/process-document",
+		"http://localhost:8000/ai/ingest",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)

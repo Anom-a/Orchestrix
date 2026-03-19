@@ -37,9 +37,15 @@ func UploadDocument(c *gin.Context) {
 
 	// Call the external AI service
 	go func() {
+		// Get absolute path
+		absPath, err := filepath.Abs(filePath)
+		if err != nil {
+			fmt.Printf("Failed to get absolute path for %s: %v\n", filePath, err)
+			return
+		}
 		// Convert doc.ID (uint) to string
 		docIDStr := fmt.Sprintf("%d", doc.ID)
-		if aiErr := services.SendToAIService(docIDStr, filePath); aiErr != nil {
+		if aiErr := services.SendToAIService(docIDStr, absPath); aiErr != nil {
 			fmt.Printf("Failed to notify AI service for doc %d: %v\n", doc.ID, aiErr)
 		}
 	}()
