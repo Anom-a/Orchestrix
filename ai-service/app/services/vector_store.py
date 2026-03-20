@@ -43,8 +43,20 @@ def store_embeddings(document_id, embeddings, chunks):
         })
     save_index()
 
-def search(query_embedding, k=3):
-    if index is None:
+def search(query_embedding,document_id,  k=10):
+    global index, chunk_store
+    if index is None or len(chunk_store) == 0:
         return []
-    D, I = index.search(np.array([query_embedding]).astype("float32"), k)
-    return [chunk_store[i] for i in I[0]]
+
+    query_embedding = np.array([query_embedding]).astype("float32")
+    distances, indices = index.search(query_embedding, k)
+    results = []
+    for i in indices[0]:
+        if 0 <= i < len(chunk_store):
+            chunk = chunk_store[i]
+            if chunk["document_id"] == document_id:
+                results.append(chunk)
+        if len(results) == k:
+            break
+
+    return results
