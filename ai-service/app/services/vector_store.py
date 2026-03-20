@@ -25,18 +25,22 @@ def save_index():
         faiss.write_index(index, INDEX_PATH)
     with open(CHUNK_STORE_PATH, "wb") as f:
         pickle.dump(chunk_store, f)
-def store_embeddings(embeddings, chunks):
+def store_embeddings(document_id, embeddings, chunks):
     global index, chunk_store
 
     embeddings = np.array(embeddings).astype("float32")
-
+    if len(embeddings.shape) != 2:
+        raise ValueError("Embeddings must be 2D aray")
+    dim = embeddings.shape[1]
     if index is None:
-        dim = embeddings.shape[1]
         index = faiss.IndexFlatL2(dim)
-
     index.add(embeddings)
-    chunk_store.extend(chunks)
-
+    for i, chunk in enumerate(chunks):
+        chunk_store.append({
+            "document_id": document_id,
+            "chunk_index": 1, 
+            "text": chunk
+        })
     save_index()
 
 def search(query_embedding, k=3):
