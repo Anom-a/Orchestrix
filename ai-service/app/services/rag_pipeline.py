@@ -1,6 +1,7 @@
 from app.services.embedding_service import chunk_text, embed_chunks
 from app.services.vector_store import store_embeddings, search
 from sentence_transformers import SentenceTransformer
+from app.services.llm_service import generate_answer
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 def ingest_document(document_id: str, text: str):
@@ -17,7 +18,7 @@ def answer_query(document_id,  query: str):
             "sources": []
         }
     context = "\n".join([chunk["text"] for chunk in retrieved_chunks])
-    answer = f"Answer based on retrieved context; \n{context}"
+    answer = generate_answer(context, query)
     return {
         "answer": answer,
         "sources": retrieved_chunks
