@@ -19,7 +19,7 @@ def ingest(req: IngestRequest):
     
     try:
         text = load_document_from_path(full_path)
-        ingest_document(text)
+        ingest_document(req.document_id, text)
         return {"status": "document ingested", "document_id": req.document_id}
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))

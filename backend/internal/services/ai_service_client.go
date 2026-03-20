@@ -3,6 +3,8 @@ package services
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -17,10 +19,20 @@ func SendToAIService(docID, filepath string) error {
 		FilePath:   filepath,
 	}
 	jsonData, _ := json.Marshal(reqBody)
-	_, err := http.Post(
+	resp, err := http.Post(
 		"http://localhost:8000/ai/ingest",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("ai service error: status %d body: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
 }

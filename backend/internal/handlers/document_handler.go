@@ -52,7 +52,9 @@ func UploadDocument(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "document uploaded",
-		"file":    file.Filename,
+		"document_id": doc.ID,
+		"file":    doc.FileName,
+		"status": doc.Status,
 	})
 }
 

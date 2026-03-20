@@ -3,10 +3,10 @@ from app.services.vector_store import store_embeddings, search
 from sentence_transformers import SentenceTransformer
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-def ingest_document(text: str):
+def ingest_document(document_id: str, text: str):
     chunks = chunk_text(text)
     embeddings = embed_chunks(chunks)
-    store_embeddings(embeddings, chunks)
+    store_embeddings(document_id, embeddings, chunks)
 
 def answer_query(document_id,  query: str):
     query_embedding = model.encode(query)
