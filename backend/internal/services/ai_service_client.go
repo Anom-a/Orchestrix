@@ -8,6 +8,21 @@ import (
 	"net/http"
 )
 
+type AIQueryRequest struct {
+	DocumentID string `json:"document_id"`
+	Question   string `json:"question"`
+}
+
+type AISourceChunk struct {
+	DocumentID string `json:"document_id"`
+	ChunkIndex int    `json:"chunk_index"`
+	Text       string `json:"text"`
+}
+
+type AIQueryResponse struct {
+	Answer  string          `json:"answer"`
+	Sources []AISourceChunk `json:"sources"`
+}
 type ProcessRequest struct {
 	DocumentID string `json:"document_id"`
 	FilePath   string `json:"file_path"`
@@ -35,4 +50,38 @@ func SendToAIService(docID, filepath string) error {
 	}
 
 	return nil
+}
+
+func QueryAIService(documentID uint, question string) (*AIQueryResponse, error) {
+	reqBody := AIQueryRequest{
+		DocumentID: fmt.Sprintf("%d", documentID),
+		Question:   question,
+	}
+
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Post(
+		"http://localhost:8000/ai/query",
+		"application/json",
+		bytes.NewBuffer(jsonData),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("ai service returned status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var aiResp AIQueryResponse
+	if err := json.NewDecoder(resp.Body).Decode(&aiResp); err != nil {
+		return nil, err
+	}
+
+	return &aiResp, nil
 }

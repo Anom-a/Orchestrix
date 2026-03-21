@@ -73,7 +73,7 @@ def test_query_success(monkeypatch):
     def fake_answer_query(document_id: str, question: str):
         assert document_id == "doc-9"
         assert question == "What is this about?"
-        return "This is a test answer."
+        return {"answer": "This is a test answer.", "sources": []}
 
     monkeypatch.setattr(query, "answer_query", fake_answer_query)
 
@@ -83,4 +83,4 @@ def test_query_success(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.json() == {"answer": "This is a test answer."}
+    assert response.json() == {"answer": "This is a test answer.", "sources": []}

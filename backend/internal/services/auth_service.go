@@ -40,3 +40,5 @@ func Login(email, password string)(string, error){
 	secret := os.Getenv("JWT_SECRET")
 	return token.SignedString([]byte(secret))
 }
+
+

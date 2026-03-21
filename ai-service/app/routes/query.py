@@ -19,5 +19,4 @@ class QueryResponse(BaseModel):
 
 @router.post("/query")
 def query(req: QueryRequest):
-    answer = answer_query(req.document_id, req.question)
-    return {"answer": answer}
+    return answer_query(req.document_id, req.question)
