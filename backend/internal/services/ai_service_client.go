@@ -108,7 +108,7 @@ func ProcessDocumentAI(documentID uint, filePath string) error {
 	}
 
 	resp, err := client.Post(
-		"http://localhost:9000/ai/process-document",
+		"http://localhost:8000/ai/ingest",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
