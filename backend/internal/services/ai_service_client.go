@@ -86,3 +86,37 @@ func QueryAIService(documentID uint, question string) (*AIQueryResponse, error) 
 
 	return &aiResp, nil
 }
+
+type AIProcessRequest struct {
+	DocumentID string `json:"document_id"`
+	FilePath   string `json:"file_path"`
+}
+
+func ProcessDocumentAI(documentID uint, filePath string) error {
+	reqBody := AIProcessRequest{
+		DocumentID: fmt.Sprintf("%d", documentID),
+		FilePath:   filePath,
+	}
+
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(
+		"http://localhost:9000/ai/process-document",
+		"application/json",
+		bytes.NewBuffer(jsonData),
+	)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("AI service failed: %s", string(body))
+	}
+
+	return nil
+}

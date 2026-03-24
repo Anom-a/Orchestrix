@@ -43,6 +43,8 @@ func GetUserDocumentByID(userID uint, documentID uint) (*models.Document, error)
 	return &doc, nil
 }
 
-func UpdateDocumentStatus(documentID uint, status string) error {
-	return database.DB.Model(&models.Document{}).Where("id = ?", documentID).Update("status", status).Error
+func UpdateDocumentStatus(userID uint, documentID uint, status string) error {
+	return database.DB.Model(&models.Document{}).
+		Where("id = ? AND user_id = ?", documentID, userID).
+		Update("status", status).Error
 }

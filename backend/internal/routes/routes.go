@@ -16,5 +16,7 @@ func RegisterRoutes(r *gin.Engine){
 	documents.Use(middleware.JWTAuth())
 	documents.POST("/upload", handlers.UploadDocument)
 	documents.GET("/", handlers.ListDocuments)
+	documents.GET("/:id", handlers.ListDocumentsByUserID)
 	documents.POST("/:id/query", handlers.QueryDocument)
+	documents.POST("/:id/process", handlers.ProcessDocument)
 }

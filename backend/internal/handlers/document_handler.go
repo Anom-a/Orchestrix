@@ -41,7 +41,7 @@ func UploadDocument(c *gin.Context) {
 		return
 	}
 
-	if statusErr := services.UpdateDocumentStatus(doc.ID, "processing"); statusErr != nil {
+	if statusErr := services.UpdateDocumentStatus(userID, doc.ID, "processing"); statusErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to mark document as processing"})
 		return
 	}
@@ -57,12 +57,12 @@ func UploadDocument(c *gin.Context) {
 		// Convert doc.ID (uint) to string
 		docIDStr := fmt.Sprintf("%d", doc.ID)
 		if aiErr := services.SendToAIService(docIDStr, absPath); aiErr != nil {
-			_ = services.UpdateDocumentStatus(doc.ID, "failed")
+			_ = services.UpdateDocumentStatus(userID, doc.ID, "failed")
 			fmt.Printf("Failed to notify AI service for doc %d: %v\n", doc.ID, aiErr)
 			return
 		}
 
-		if statusErr := services.UpdateDocumentStatus(doc.ID, "ready"); statusErr != nil {
+		if statusErr := services.UpdateDocumentStatus(userID, doc.ID, "ready"); statusErr != nil {
 			fmt.Printf("Failed to update status for doc %d: %v\n", doc.ID, statusErr)
 		}
 	}()
@@ -126,7 +126,9 @@ func QueryDocument(c *gin.Context) {
 	}
 
 	_ = doc
-
+	if doc.Status != "ready"{
+		c.JSON(http.StatusBadRequest, gin.H{"error": "document is not ready for querying"})
+	}
 	aiResp, err := services.QueryAIService(documentID, req.Question)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to query ai service"})
@@ -137,5 +139,85 @@ func QueryDocument(c *gin.Context) {
 		"document_id": documentID,
 		"answer":      aiResp.Answer,
 		"sources":     aiResp.Sources,
+	})
+}
+
+func ListDocumentsByUserID(c *gin.Context){
+	value, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	id := uint(value)
+	userID := c.MustGet("user_id").(uint)
+	doc, err := services.GetUserDocumentByID(userID, id)
+	if err != nil{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "error getting user from the database" + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, doc)
+}
+func ProcessDocument(c *gin.Context) {
+	userID := c.MustGet("user_id").(uint)
+
+	idParam := c.Param("id")
+	documentID64, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid document id"})
+		return
+	}
+	documentID := uint(documentID64)
+
+	// 1. Fetch document
+	doc, err := services.GetUserDocumentByID(userID, documentID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "document not found"})
+		return
+	}
+
+	// 2. Validate status
+	if doc.Status == "processing" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "document is already processing"})
+		return
+	}
+
+	if doc.Status == "ready" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "document already processed"})
+		return
+	}
+
+	// Only allow uploaded or failed
+	if doc.Status != "uploaded" && doc.Status != "failed" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid document state"})
+		return
+	}
+
+	// 3. Set status = processing
+	err = services.UpdateDocumentStatus(userID, documentID, "processing")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update status"})
+		return
+	}
+
+	// 4. Call AI service
+	err = services.ProcessDocumentAI(documentID, doc.FilePath)
+	if err != nil {
+		// 5. Mark as failed
+		_ = services.UpdateDocumentStatus(userID, documentID, "failed")
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "processing failed",
+		})
+		return
+	}
+
+	// 6. Mark as ready
+	err = services.UpdateDocumentStatus(userID, documentID, "ready")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update final status"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "document processed successfully",
 	})
 }
