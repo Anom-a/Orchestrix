@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type AIQueryRequest struct {
@@ -91,7 +92,6 @@ type AIProcessRequest struct {
 	DocumentID string `json:"document_id"`
 	FilePath   string `json:"file_path"`
 }
-
 func ProcessDocumentAI(documentID uint, filePath string) error {
 	reqBody := AIProcessRequest{
 		DocumentID: fmt.Sprintf("%d", documentID),
@@ -103,7 +103,11 @@ func ProcessDocumentAI(documentID uint, filePath string) error {
 		return err
 	}
 
-	resp, err := http.Post(
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
+
+	resp, err := client.Post(
 		"http://localhost:9000/ai/process-document",
 		"application/json",
 		bytes.NewBuffer(jsonData),

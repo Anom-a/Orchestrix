@@ -43,8 +43,21 @@ func GetUserDocumentByID(userID uint, documentID uint) (*models.Document, error)
 	return &doc, nil
 }
 
+// GetOwnedDocumentByID returns a document for a user without gating by processing status.
+func GetOwnedDocumentByID(userID uint, documentID uint) (*models.Document, error) {
+	var doc models.Document
+	err := database.DB.Where("id = ? AND user_id = ?", documentID, userID).First(&doc).Error
+	if err != nil {
+		return nil, ErrDocumentNotFound
+	}
+	return &doc, nil
+}
+
 func UpdateDocumentStatus(userID uint, documentID uint, status string) error {
 	return database.DB.Model(&models.Document{}).
 		Where("id = ? AND user_id = ?", documentID, userID).
 		Update("status", status).Error
+}
+func CanProcessDocument(status string) bool {
+	return status == "uploaded" || status == "failed"
 }
