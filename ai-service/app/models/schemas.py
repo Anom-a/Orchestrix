@@ -9,6 +9,7 @@ class SourceChunk(BaseModel):
     document_id: str
     chunk_index: int
     text: str
+    distance: float
 
 class QueryResponse(BaseModel):
     answer: str

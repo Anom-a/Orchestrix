@@ -17,6 +17,12 @@ def answer_query(document_id,  query: str):
             "answer": "No relevant information found for this document.",
             "sources": []
         }
+    best_distance = retrieved_chunks[0]["distance"]
+    if best_distance < 0.9:
+        return {
+            "answer": "The document does not contain enough information to answer that",
+            "sources": []
+        }
     context = "\n".join([chunk["text"] for chunk in retrieved_chunks])
     answer = generate_answer(context, query)
     return {

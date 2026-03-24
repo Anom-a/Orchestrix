@@ -14,9 +14,10 @@ type AIQueryRequest struct {
 }
 
 type AISourceChunk struct {
-	DocumentID string `json:"document_id"`
-	ChunkIndex int    `json:"chunk_index"`
-	Text       string `json:"text"`
+	DocumentID string  `json:"document_id"`
+	ChunkIndex int     `json:"chunk_index"`
+	Text       string  `json:"text"`
+	Distance   float64 `json:"distance"`
 }
 
 type AIQueryResponse struct {
