@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"github.com/Anom-a/Orchestrix/internal/database"
 	"github.com/Anom-a/Orchestrix/internal/models"
@@ -15,7 +16,7 @@ func CreateDocument(userID uint, filename, filepath string) (models.Document, er
 	doc := models.Document{
 		UserID:   userID,
 		FileName: filename,
-		FilePath: filepath,
+		Filepath: filepath,
 		Status:   "uploaded",
 	}
 	err := database.DB.Create(&doc).Error
@@ -58,6 +59,48 @@ func UpdateDocumentStatus(userID uint, documentID uint, status string) error {
 		Where("id = ? AND user_id = ?", documentID, userID).
 		Update("status", status).Error
 }
+
+func MarkDocumentProcessing(userID uint, documentID uint) error {
+	now := time.Now()
+
+	return database.DB.Model(&models.Document{}).
+		Where("id = ? AND user_id = ?", documentID, userID).
+		Updates(map[string]interface{}{
+			"status":                "processing",
+			"processing_started_at": &now,
+			"processed_at":          nil,
+		}).Error
+}
+
+func MarkDocumentReady(userID uint, documentID uint) error {
+	now := time.Now()
+
+	return database.DB.Model(&models.Document{}).
+		Where("id = ? AND user_id = ?", documentID, userID).
+		Updates(map[string]interface{}{
+			"status":       "ready",
+			"processed_at": &now,
+		}).Error
+}
+
+func MarkDocumentFailed(userID uint, documentID uint) error {
+	return database.DB.Model(&models.Document{}).
+		Where("id = ? AND user_id = ?", documentID, userID).
+		Update("status", "failed").Error
+}
+
+func FindStaleProcessingDocuments(timeout time.Duration) ([]models.Document, error) {
+	var docs []models.Document
+	cutoff := time.Now().Add(-timeout)
+
+	err := database.DB.
+		Where("status = ? AND processing_started_at IS NOT NULL AND processing_started_at < ?", "processing", cutoff).
+		Find(&docs).Error
+
+	return docs, err
+}
+
 func CanProcessDocument(status string) bool {
 	return status == "uploaded" || status == "failed"
 }
+

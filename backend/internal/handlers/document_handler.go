@@ -157,8 +157,14 @@ func ProcessDocument(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "document cannot be processed in its current state"})
 		return
 	}
-	// 4. Process asynchronously. Background worker updates final status.
-	go services.ProcessDocumentInBackground(userID, documentID, doc.FilePath)
+
+	if err := services.MarkDocumentProcessing(userID, documentID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to mark document as processing"})
+		return
+	}
+
+	// Process asynchronously. Background worker updates final status.
+	go services.ProcessDocumentInBackground(userID, documentID, doc.Filepath)
 	c.JSON(http.StatusAccepted, gin.H{
 		"message":     "document processing started",
 		"document_id": documentID,

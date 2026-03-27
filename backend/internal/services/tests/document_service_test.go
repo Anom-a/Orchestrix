@@ -78,7 +78,7 @@ func TestGetUserDocumentByIDReady(t *testing.T) {
 	doc := models.Document{
 		UserID:   1,
 		FileName: "ready.txt",
-		FilePath: "storage/uploads/ready.txt",
+		Filepath: "storage/uploads/ready.txt",
 		Status:   "ready",
 	}
 	if err := database.DB.Create(&doc).Error; err != nil {
@@ -101,7 +101,7 @@ func TestGetUserDocumentByIDProcessing(t *testing.T) {
 	doc := models.Document{
 		UserID:   1,
 		FileName: "processing.txt",
-		FilePath: "storage/uploads/processing.txt",
+		Filepath: "storage/uploads/processing.txt",
 		Status:   "processing",
 	}
 	if err := database.DB.Create(&doc).Error; err != nil {
@@ -120,7 +120,7 @@ func TestGetUserDocumentByIDFailed(t *testing.T) {
 	doc := models.Document{
 		UserID:   1,
 		FileName: "failed.txt",
-		FilePath: "storage/uploads/failed.txt",
+		Filepath: "storage/uploads/failed.txt",
 		Status:   "failed",
 	}
 	if err := database.DB.Create(&doc).Error; err != nil {

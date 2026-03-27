@@ -11,14 +11,14 @@ func ProcessDocumentInBackground(userID uint, documentID uint, filePath string) 
 	if err != nil {
 		log.Printf("AI processing failed for document %d: %v\n", documentID, err)
 
-		updateErr := UpdateDocumentStatus(userID, documentID, "failed")
+		updateErr := MarkDocumentFailed(userID, documentID)
 		if updateErr != nil {
 			log.Printf("Failed to update document %d status to failed: %v\n", documentID, updateErr)
 		}
 		return
 	}
 
-	err = UpdateDocumentStatus(userID, documentID, "ready")
+	err = MarkDocumentReady(userID, documentID)
 	if err != nil {
 		log.Printf("Failed to update document %d status to ready: %v\n", documentID, err)
 		return
