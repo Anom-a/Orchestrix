@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.core.config import *  # noqa: F401,F403 — loads .env via dotenv
 from app.routes import ingest, query
 from app.services.vector_store import load_index
 app = FastAPI()

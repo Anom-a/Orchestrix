@@ -18,7 +18,8 @@ def answer_query(document_id,  query: str):
             "sources": []
         }
     best_distance = retrieved_chunks[0]["distance"]
-    if best_distance < 0.9:
+    # FAISS L2: lower distance = better match. Reject if best match is too far.
+    if best_distance > 1.5:
         return {
             "answer": "The document does not contain enough information to answer that",
             "sources": []

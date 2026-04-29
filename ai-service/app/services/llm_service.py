@@ -1,6 +1,9 @@
 import os
+import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
+
+logger = logging.getLogger(__name__)
 
 def get_llm():
     api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
@@ -31,17 +34,17 @@ def generate_answer(context: str, question: str) -> str:
 
         system_prompt = (
             "You are a document question-answering assistant. "
-            "Answer only using the provided context. "
+            "You are given extracted chunks from a document and must answer the user's question based ONLY on these chunks. "
+            "When answering, consider the type of document (e.g., resume/CV, report, article, contract) based on the content structure. "
+            "For example, if the chunks contain a person's name, skills, experience, and education, the document is likely a resume. "
+            "Provide detailed, comprehensive answers. "
             "If the answer is not in the context, say that the document does not contain enough information."
         )
 
-        user_prompt = f"""
-Context:
+        user_prompt = f"""Document chunks:
 {context}
 
-Question:
-{question}
-"""
+Question: {question}"""
 
         response = llm.invoke([
             SystemMessage(content=system_prompt),
@@ -49,5 +52,6 @@ Question:
         ])
 
         return response.content
-    except Exception:
+    except Exception as e:
+        logger.error("Gemini LLM call failed: %s", e, exc_info=True)
         return _fallback_answer(context)

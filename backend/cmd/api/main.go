@@ -7,6 +7,7 @@ import (
 
 	"github.com/Anom-a/Orchestrix/internal/config"
 	"github.com/Anom-a/Orchestrix/internal/database"
+	"github.com/Anom-a/Orchestrix/internal/middleware"
 	"github.com/Anom-a/Orchestrix/internal/models"
 	"github.com/Anom-a/Orchestrix/internal/routes"
 	"github.com/Anom-a/Orchestrix/internal/services"
@@ -32,6 +33,8 @@ func main() {
 
 	// Start a background worker to claim and process jobs
 	go services.StartJobWorker(1)
+
+	r.Use(middleware.CORS())
 
 	routes.RegisterRoutes(r)
 

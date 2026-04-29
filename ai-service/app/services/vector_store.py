@@ -38,14 +38,14 @@ def store_embeddings(document_id, embeddings, chunks):
     for i, chunk in enumerate(chunks):
         chunk_store.append({
             "document_id": document_id,
-            "chunk_index": 1, 
+            "chunk_index": i, 
             "text": chunk
         })
     save_index()
 
 
 
-def search(query_embedding, document_id, k=3, fetch_k=10):
+def search(query_embedding, document_id, k=5):
     global index, chunk_store
 
     if index is None or len(chunk_store) == 0:
@@ -53,6 +53,11 @@ def search(query_embedding, document_id, k=3, fetch_k=10):
 
     document_id = str(document_id)
     query_embedding = np.array([query_embedding]).astype("float32")
+
+    # Search the entire index to ensure we find chunks from the target document,
+    # since other documents' chunks may dominate the nearest neighbors.
+    total_vectors = index.ntotal
+    fetch_k = min(total_vectors, max(50, total_vectors))
     distances, indices = index.search(query_embedding, fetch_k)
 
     results = []
