@@ -15,12 +15,12 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load(".env", "../.env", "../../.env", "backend/.env")
+	_ = godotenv.Load(".env", "../.env", "../../.env", "backend/.env")  // just a backup validation if the .env file is elsew
 	port := os.Getenv("PORT")
 	configFile := config.Load(port)
 	r := gin.Default()
 	database.Connect()
-	database.DB.AutoMigrate(&models.User{}, models.Document{})
+	database.DB.AutoMigrate(&models.User{}, &models.Document{}, &models.ProcessingJob{})
 
 	const staleProcessingTimeout = 20 * time.Minute
 	recoveredCount, recoveryErr := services.RecoverStaleProcessingDocuments(staleProcessingTimeout)
@@ -29,6 +29,9 @@ func main() {
 	} else if recoveredCount > 0 {
 		log.Printf("Recovered %d stale processing documents", recoveredCount)
 	}
+
+	// Start a background worker to claim and process jobs
+	go services.StartJobWorker(1)
 
 	routes.RegisterRoutes(r)
 

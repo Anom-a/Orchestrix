@@ -163,8 +163,11 @@ func ProcessDocument(c *gin.Context) {
 		return
 	}
 
-	// Process asynchronously. Background worker updates final status.
-	go services.ProcessDocumentInBackground(userID, documentID, doc.Filepath)
+	// Enqueue a job instead of running the goroutine directly
+	if _, jobErr := services.CreateJob(documentID); jobErr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to enqueue document processing job"})
+		return
+	}
 	c.JSON(http.StatusAccepted, gin.H{
 		"message":     "document processing started",
 		"document_id": documentID,

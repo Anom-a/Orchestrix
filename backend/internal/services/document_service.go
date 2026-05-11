@@ -103,4 +103,3 @@ func FindStaleProcessingDocuments(timeout time.Duration) ([]models.Document, err
 func CanProcessDocument(status string) bool {
 	return status == "uploaded" || status == "failed"
 }
-
