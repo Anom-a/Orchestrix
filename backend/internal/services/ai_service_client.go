@@ -6,8 +6,20 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 )
+
+// getAIServiceURL returns the base URL for the AI service from environment,
+// falling back to http://localhost:8000 for local development.
+func getAIServiceURL() string {
+	url := os.Getenv("AI_SERVICE_URL")
+	if url == "" {
+		url = "http://localhost:8000"
+	}
+	return strings.TrimRight(url, "/")
+}
 
 type AIQueryRequest struct {
 	DocumentID string `json:"document_id"`
@@ -37,7 +49,7 @@ func SendToAIService(docID, filepath string) error {
 	}
 	jsonData, _ := json.Marshal(reqBody)
 	resp, err := http.Post(
-		"http://localhost:8000/ai/ingest",
+		getAIServiceURL()+"/ai/ingest",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
@@ -66,7 +78,7 @@ func QueryAIService(documentID uint, question string) (*AIQueryResponse, error) 
 	}
 
 	resp, err := http.Post(
-		"http://localhost:8000/ai/query",
+		getAIServiceURL()+"/ai/query",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
@@ -108,7 +120,7 @@ func ProcessDocumentAI(documentID uint, filePath string) error {
 	}
 
 	resp, err := client.Post(
-		"http://localhost:8000/ai/ingest",
+		getAIServiceURL()+"/ai/ingest",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)

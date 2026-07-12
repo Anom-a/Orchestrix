@@ -1,0 +1,6 @@
+.env
+.git
+tmp/
+storage/uploads/*
+docs/
+*.md

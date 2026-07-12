@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.services.rag_pipeline  import ingest_document
 from app.services.document_loader import load_document_from_path
+from app.core.config import STORAGE_PATH
 import os
 
 router = APIRouter()
@@ -11,11 +12,9 @@ class IngestRequest(BaseModel):
 
 @router.post("/ingest")
 def ingest(req: IngestRequest):
-    # Construct paths relative to the project root
-    # Backend storage is in ../backend/storage/uploads/
+    # Construct paths relative to the configured storage root
     # The file_path from the backend is like "storage/uploads/unique_name"
-    # So the full path from ai-service's perspective is:
-    full_path = os.path.join("../backend", req.file_path)
+    full_path = os.path.join(STORAGE_PATH, req.file_path)
     
     try:
         text = load_document_from_path(full_path)

@@ -2,6 +2,7 @@ import os
 import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
+from app.core.config import GEMINI_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ def get_llm():
         raise RuntimeError("Gemini API key not configured")
 
     return ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model=GEMINI_MODEL,
         temperature=0,
         api_key=api_key,
     )

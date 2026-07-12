@@ -13,8 +13,16 @@ backend/tmp/
 bin/
 backend/storage/*
 
+# Node
+node_modules/
+dist/
+
 # Environments
 .env
+!.env.example
+
+# Docker
+*.log
 
 # OS
 .DS_Store
